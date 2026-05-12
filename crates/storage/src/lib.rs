@@ -594,3 +594,19 @@ pub trait CatalogStore:
     /// the settings table.
     fn cached_encryption_key(&self) -> Option<String>;
 }
+
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    /// Verify that CatalogStore is dyn-compatible (object-safe).
+    ///
+    /// This test ensures all catalog traits use BoxFuture instead of RPITIT,
+    /// allowing us to use `Arc<dyn CatalogStore>` in the factory pattern.
+    #[test]
+    fn catalog_store_is_dyn_compatible() {
+        // This function just needs to compile - it's never called
+        fn _assert_dyn(_: Arc<dyn CatalogStore>) {}
+    }
+}
