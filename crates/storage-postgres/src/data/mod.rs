@@ -21,8 +21,8 @@ pub(crate) fn data_table_name(table_id: &str) -> String {
 }
 
 /// SQL table name for a GSI/LSI data table.
-pub(crate) fn index_table_name(table_id: &str, index_name: &str) -> String {
-    format!("\"_ddb_{table_id}__gsi__{index_name}\"")
+pub(crate) fn index_table_name(index_id: &str) -> String {
+    format!("\"_ddb_{index_id}\"")
 }
 
 /// Look up all RANGE key attribute definitions from the key schema (preserving order).

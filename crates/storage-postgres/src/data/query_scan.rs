@@ -31,7 +31,10 @@ impl PostgresEngine {
         use std::fmt::Write;
 
         let ddb_table = if let Some(idx_name) = index_name {
-            index_table_name(&key_info.table_id, idx_name)
+            let idx_info = self
+                .fetch_index_info_by_table_id(&key_info.table_id, idx_name)
+                .await?;
+            index_table_name(&idx_info.index_id)
         } else {
             data_table_name(&key_info.table_id)
         };
@@ -190,7 +193,10 @@ impl PostgresEngine {
         use std::fmt::Write;
 
         let ddb_table = if let Some(idx_name) = index_name {
-            index_table_name(&key_info.table_id, idx_name)
+            let idx_info = self
+                .fetch_index_info_by_table_id(&key_info.table_id, idx_name)
+                .await?;
+            index_table_name(&idx_info.index_id)
         } else {
             data_table_name(&key_info.table_id)
         };

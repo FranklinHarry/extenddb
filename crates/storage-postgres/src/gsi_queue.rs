@@ -44,10 +44,11 @@ fn is_undefined_table(err: &StorageError) -> bool {
 struct GsiUpdate {
     _account_id: String,
     table_name: String,
-    table_id: String,
+    _table_id: String,
     base_key_schema: Vec<KeySchemaElement>,
     attr_defs: Vec<AttributeDefinition>,
     index_name: String,
+    index_id: String,
     index_key_schema: Vec<KeySchemaElement>,
     index_projection: Projection,
     old_item: Option<Item>,
@@ -102,6 +103,7 @@ impl GsiQueue {
         base_key_schema: &[KeySchemaElement],
         attr_defs: &[AttributeDefinition],
         index_name: &str,
+        index_id: &str,
         index_key_schema: &[KeySchemaElement],
         index_projection: &Projection,
         old_item: Option<&Item>,
@@ -111,10 +113,11 @@ impl GsiQueue {
         let update = GsiUpdate {
             _account_id: account_id.to_owned(),
             table_name: table_name.to_owned(),
-            table_id: table_id.to_owned(),
+            _table_id: table_id.to_owned(),
             base_key_schema: base_key_schema.to_vec(),
             attr_defs: attr_defs.to_vec(),
             index_name: index_name.to_owned(),
+            index_id: index_id.to_owned(),
             index_key_schema: index_key_schema.to_vec(),
             index_projection: index_projection.clone(),
             old_item: old_item.cloned(),
@@ -188,7 +191,7 @@ async fn worker(partition_id: usize, part: Arc<Partition>, pool: PgPool) {
 
 /// Apply a single GSI update within a transaction.
 async fn apply_gsi_update(pool: &PgPool, update: &GsiUpdate) -> Result<(), StorageError> {
-    let idx_table = index_table_name(&update.table_id, &update.index_name);
+    let idx_table = index_table_name(&update.index_id);
     let idx_sks = all_sort_key_info(&update.index_key_schema, &update.attr_defs);
     let base_sks = all_sort_key_info(&update.base_key_schema, &update.attr_defs);
 
