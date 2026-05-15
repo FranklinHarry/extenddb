@@ -11,8 +11,6 @@ use extenddb_core::expression::{parse_key_condition, parse_projection, tokenize_
 use extenddb_core::types::{
     IndexType, QueryInput, QueryOutput, Select, TableKeyInfo, item_size_bytes,
 };
-use extenddb_storage::DataEngine;
-use extenddb_storage::TableEngine;
 
 use crate::OperationContext;
 use crate::capacity_helpers;
@@ -33,9 +31,9 @@ use crate::{DispatchMetrics, DispatchResult};
 ///
 /// Returns `DynamoDbError` for validation failures, missing tables, or storage errors.
 #[allow(clippy::cast_possible_wrap)] // item counts won't exceed i64::MAX
-pub async fn handle_query<S: TableEngine + DataEngine>(
+pub async fn handle_query(
     body: Value,
-    ctx: &OperationContext<S>,
+    ctx: &OperationContext,
 ) -> Result<DispatchResult, DynamoDbError> {
     let input: QueryInput = serde_json::from_value(body).map_err(|e| {
         DynamoDbError::SerializationException(format!(

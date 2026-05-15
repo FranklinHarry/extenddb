@@ -10,8 +10,6 @@ use extenddb_core::expression::{parse_projection, tokenize_with_limit};
 use extenddb_core::types::{
     IndexType, ScanInput, ScanOutput, Select, TableKeyInfo, item_size_bytes,
 };
-use extenddb_storage::DataEngine;
-use extenddb_storage::TableEngine;
 
 use crate::OperationContext;
 use crate::capacity_helpers;
@@ -31,9 +29,9 @@ use crate::{DispatchMetrics, DispatchResult};
 ///
 /// Returns `DynamoDbError` for validation failures, missing tables, or storage errors.
 #[allow(clippy::cast_possible_wrap)] // item counts won't exceed i64::MAX
-pub async fn handle_scan<S: TableEngine + DataEngine>(
+pub async fn handle_scan(
     body: Value,
-    ctx: &OperationContext<S>,
+    ctx: &OperationContext,
 ) -> Result<DispatchResult, DynamoDbError> {
     let input: ScanInput = serde_json::from_value(body).map_err(|e| {
         DynamoDbError::SerializationException(format!(

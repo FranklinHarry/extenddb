@@ -7,8 +7,6 @@ use serde_json::Value;
 
 use extenddb_core::error::DynamoDbError;
 use extenddb_core::types::{DeleteItemInput, DeleteItemOutput, ReturnValues, item_size_bytes};
-use extenddb_storage::DataEngine;
-use extenddb_storage::TableEngine;
 
 use crate::OperationContext;
 use crate::capacity_helpers;
@@ -25,9 +23,9 @@ use crate::{DispatchMetrics, DispatchResult};
 /// # Errors
 ///
 /// Returns `DynamoDbError` for validation failures, missing tables, or storage errors.
-pub async fn handle_delete_item<S: TableEngine + DataEngine>(
+pub async fn handle_delete_item(
     body: Value,
-    ctx: &OperationContext<S>,
+    ctx: &OperationContext,
 ) -> Result<DispatchResult, DynamoDbError> {
     let input: DeleteItemInput = serde_json::from_value(body).map_err(|e| {
         DynamoDbError::SerializationException(format!(
