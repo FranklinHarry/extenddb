@@ -55,8 +55,9 @@ pub async fn handle_batch_write_item<S: TableEngine + DataEngine>(
     // Validate: per-table operations <= 25
     for (table_name, reqs) in &input.request_items {
         if reqs.len() > MAX_BATCH_WRITE_ITEMS {
+            let items_repr = reqs.iter().map(|_| "WriteRequest").collect::<Vec<_>>().join(", ");
             return Err(DynamoDbError::ValidationException(format!(
-                "1 validation error detected: Value at 'requestItems.{table_name}' failed to satisfy constraint: \
+                "1 validation error detected: Value '{{{table_name}=[{items_repr}]}}' at 'requestItems' failed to satisfy constraint: \
                  Map value must satisfy constraint: [Member must have length less than or equal to 25, \
                  Member must have length greater than or equal to 1]"
             )));

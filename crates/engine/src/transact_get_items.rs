@@ -46,7 +46,10 @@ pub async fn handle_transact_get_items<S: TableEngine + DataEngine>(
 
     if input.transact_items.len() > MAX_TRANSACT_GET_ITEMS {
         return Err(DynamoDbError::ValidationException(
-            "1 validation error detected: Value at 'transactItems' failed to satisfy constraint: Member must have length less than or equal to 100".to_owned(),
+            format!(
+                "1 validation error detected: Value '[{}]' at 'transactItems' failed to satisfy constraint: Member must have length less than or equal to 100",
+                input.transact_items.iter().map(|_| "TransactGetItem").collect::<Vec<_>>().join(", ")
+            ),
         ));
     }
 

@@ -61,9 +61,10 @@ pub async fn handle_transact_write_items<S: TableEngine + DataEngine>(
     }
 
     if input.transact_items.len() > MAX_TRANSACT_WRITE_ITEMS {
-        return Err(DynamoDbError::ValidationException(
-            "1 validation error detected: Value at 'transactItems' failed to satisfy constraint: Member must have length less than or equal to 100".to_owned(),
-        ));
+        let items_repr = input.transact_items.iter().map(|_| "TransactWriteItem").collect::<Vec<_>>().join(", ");
+        return Err(DynamoDbError::ValidationException(format!(
+            "1 validation error detected: Value '[{items_repr}]' at 'transactItems' failed to satisfy constraint: Member must have length less than or equal to 100"
+        )));
     }
 
     // Validate each item has exactly one operation
