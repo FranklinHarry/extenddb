@@ -153,7 +153,15 @@ impl PostgresEngine {
                 let result =
                     bind_sk_execute!(&insert_sql, pk_text.as_ref(), &sk, &item_json, &mut *tx)?;
                 if result.rows_affected() == 0 {
-                    return Err(StorageError::ConditionFailed(None));
+                    // Another transaction inserted between our SELECT and INSERT.
+                    // Fetch the winner to return with ConditionFailed.
+                    let winner_sql = format!(
+                        "SELECT item_data FROM {ddb_table} WHERE pk = $1 AND {sk_col} = $2"
+                    );
+                    let winner: Option<(serde_json::Value,)> =
+                        bind_sk_fetch_optional!(&winner_sql, pk_text.as_ref(), &sk, &mut *tx)?;
+                    let winner_item = winner.map(|(v,)| json_to_item(v)).transpose()?;
+                    return Err(StorageError::ConditionFailed(winner_item));
                 }
             }
         } else {
@@ -177,7 +185,16 @@ impl PostgresEngine {
                     .await
                     .map_err(|e| StorageError::Internal(e.to_string()))?;
                 if result.rows_affected() == 0 {
-                    return Err(StorageError::ConditionFailed(None));
+                    // Another transaction inserted between our SELECT and INSERT.
+                    // Fetch the winner to return with ConditionFailed.
+                    let winner_sql = format!("SELECT item_data FROM {ddb_table} WHERE pk = $1");
+                    let winner: Option<(serde_json::Value,)> = sqlx::query_as(&winner_sql)
+                        .bind(pk_text.as_ref())
+                        .fetch_optional(&mut *tx)
+                        .await
+                        .map_err(|e| StorageError::Internal(e.to_string()))?;
+                    let winner_item = winner.map(|(v,)| json_to_item(v)).transpose()?;
+                    return Err(StorageError::ConditionFailed(winner_item));
                 }
             }
         }
