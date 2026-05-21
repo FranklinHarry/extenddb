@@ -59,7 +59,7 @@ def wait_for_active(client, table_name: str, timeout: float = 60.0) -> None:
         resp = client.describe_table(TableName=table_name)
         if resp["Table"]["TableStatus"] == "ACTIVE":
             return
-        time.sleep(0.2)
+        time.sleep(0.02)
     raise TimeoutError(f"Table {table_name} did not become ACTIVE within {timeout}s")
 @pytest.fixture()
 def create_and_cleanup_table(dynamodb_client, unique_table_name):
@@ -108,5 +108,5 @@ def wait_for_deleted(client, table_name: str, timeout: float = 60.0) -> None:
             client.describe_table(TableName=table_name)
         except client.exceptions.ResourceNotFoundException:
             return
-        time.sleep(0.2)
+        time.sleep(0.02)
     raise TimeoutError(f"Table {table_name} was not deleted within {timeout}s")
